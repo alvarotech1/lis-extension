@@ -5,3 +5,4 @@ while x > 0 do
   x := x - 1;
 end;
 y := 2;
+prueba := y + res;

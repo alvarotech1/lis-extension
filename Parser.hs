@@ -135,9 +135,9 @@ comm2 = try (do reserved lis "skip"
         <|> try (do reserved lis "while"
                     cond <- boolexp
                     reserved lis "do"
-                    body <- endBy1 comm2 (reservedOp lis ";")
+                    body <- comm
                     reserved lis "end"
-                    return (While cond (foldr1 Seq body)))
+                    return (While cond body))
         <|> try (do reserved lis "begin"
                     c <- comm
                     reserved lis "end"
