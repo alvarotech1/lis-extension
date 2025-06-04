@@ -2,6 +2,7 @@ module Main where
 
 import System.Environment (getArgs)
 import Parser (parseComm)
+import Preprocesador (preprocesarGoto)
 
 -- Modificar este import para usar diferentes evaluadores
 import Eval3
@@ -13,10 +14,11 @@ main = do arg:_ <- getArgs
 
 -- Ejecuta un programa a partir de su archivo fuente
 run :: [Char] -> IO ()
-run ifile =
-    do
-    s <- readFile ifile
-    case parseComm ifile s of
-      Left error -> print error
-      Right t    -> print (eval t) --imprimir el resultado de evaluar.
+run ifile = do
+  s <- readFile ifile
+  case preprocesarGoto s of
+    Left err     -> putStrLn ("Preprocesador error: " ++ err)
+    Right limpio -> case parseComm ifile limpio of
+                      Left error -> print error
+                      Right t    -> print (eval t)
       --Right t    -> print t        --imprimir sin evaluar (para testear Parser)

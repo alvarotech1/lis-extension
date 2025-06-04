@@ -2,7 +2,5 @@ x := 5;
 res := 1;
 while x > 0 do
   res := res * x;
-  x := x - 1;
-end;
-y := 2;
-prueba := y + res;
+  x := x - 1
+end
