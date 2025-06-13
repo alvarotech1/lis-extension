@@ -14,11 +14,11 @@ main = do arg:_ <- getArgs
 
 -- Ejecuta un programa a partir de su archivo fuente
 run :: [Char] -> IO ()
-run ifile = do
-  s <- readFile ifile
+run file = do
+  s <- readFile file
   case preprocesarGoto s of
     Left err     -> putStrLn ("Preprocesador error: " ++ err)
-    Right limpio -> case parseComm ifile limpio of
+    Right limpio -> case parseComm file limpio of
                       Left error -> print error
                       Right t    -> print (eval t)
-      --Right t    -> print t        --imprimir sin evaluar (para testear Parser)
+                      --Right t    -> print t        --imprimir sin evaluar (para testear Parser)
