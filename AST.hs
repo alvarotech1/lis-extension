@@ -25,11 +25,11 @@ data BoolExp = BTrue
  deriving Show
 
 -- Comandos (sentencias)
--- Observar que solo se permiten variables de un tipo (entero)
 data Comm = Skip
           | Let Variable IntExp
           | Seq Comm Comm
           | Cond BoolExp Comm Comm
           | While BoolExp Comm
-          
+          | Sub String Comm       
+          | Call String           
  deriving Show

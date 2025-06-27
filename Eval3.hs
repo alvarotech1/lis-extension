@@ -5,7 +5,9 @@ import Control.Applicative (Applicative(..))
 import Control.Monad       (liftM, ap)  
 
 -- Estados
+type Funcs = [(String, Comm)]
 type Env = [(Variable,Int)]
+
 
 -- Estado nulo
 initState :: Env
@@ -64,23 +66,37 @@ instance Applicative StateErrorTick where
 
 -- Evalua un programa en el estado nulo
 eval :: Comm -> (Env, Int)
-eval p = case runStateErrorTick (evalComm p) initState of
-    Just (v, s, t) -> (s, t) 
-    Nothing        -> error "ERROR!"
+eval p =
+  let (funcs, mainComm) = splitDefs p
+  in case runStateErrorTick (evalComm' mainComm funcs) initState of
+       Just (_, s, t) -> (s, t)
+       Nothing        -> error "ERROR!"
+
+splitDefs :: Comm -> (Funcs, Comm)
+splitDefs (Seq (Sub f body) rest) =
+  let (fs, main) = splitDefs rest
+  in ((f, body):fs, main)
+splitDefs c = ([], c)
+
 
 -- Evalua un comando en un estado dado
-evalComm :: (MonadState m, MonadError m, MonadTick m) => Comm -> m ()
-evalComm Skip           = return ()
-evalComm (Let v e)      = do val <- evalIntExp e
-                             update v val
-evalComm (Seq l r)      = do evalComm l
-                             evalComm r
-evalComm (Cond b tc fc) = do bval <- evalBoolExp b
-                             if bval then evalComm tc
-                             else evalComm fc
-evalComm (While b c)    = do bval <- evalBoolExp b
-                             if bval then evalComm (Seq c (While b c))
-                             else return ()
+evalComm' :: (MonadState m, MonadError m, MonadTick m) => Comm -> Funcs -> m ()
+evalComm' Skip _ = return ()
+evalComm' (Let v e) _ = do val <- evalIntExp e
+                           update v val
+evalComm' (Seq l r) fs = do evalComm' l fs
+                            evalComm' r fs
+evalComm' (Cond b tc fc) fs = do bval <- evalBoolExp b
+                                 if bval then evalComm' tc fs
+                                         else evalComm' fc fs
+evalComm' (While b c) fs = do bval <- evalBoolExp b
+                              if bval then evalComm' (Seq c (While b c)) fs
+                                      else return ()
+evalComm' (Sub _ _) _ = return ()  -- ya se extrajo antes
+evalComm' (Call f) fs =
+  case lookup f fs of
+    Just cuerpo -> evalComm' cuerpo fs
+    Nothing     -> throw
 
 -- Evalua una expresion entera, sin efectos laterales
 evalIntExp :: (MonadState m, MonadError m, MonadTick m) => IntExp -> m Int

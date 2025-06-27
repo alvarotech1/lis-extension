@@ -9,10 +9,6 @@ type LineaNumerada = (Int, String)
 esUntil :: String -> Bool
 esUntil s = trim s == "until;" 
 
--- -------------------------------------------------------------------
--- 2. Extraer bloque destino -----------------------------------------
---    Devuelve (códigosCopiados, numerosAEliminar)
--- -------------------------------------------------------------------
 extraerBloque :: [LineaNumerada] -> Int -> Either String ([String], [Int])
 extraerBloque prog dest =
   case dropWhile ((/= dest) . fst) prog of

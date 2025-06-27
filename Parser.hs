@@ -142,6 +142,15 @@ comm2 = try (do reserved lis "skip"
                     c <- comm
                     reserved lis "end"
                     return c)
+        <|> try (do reserved lis "sub"
+                    fname <- identifier lis
+                    reserved lis "do"
+                    cuerpo <- comm
+                    reserved lis "end"
+                    return (Sub fname cuerpo))
+        <|> try (do reserved lis "call"
+                    fname <- identifier lis
+                    return (Call fname))
 
 
 

@@ -1,0 +1,11 @@
+10: sub incrementar do
+11:   x := 0;
+12:   y := 3;
+13:   goto 100;
+14:   x := 999;
+15: end;
+20: call incrementar;
+21: z := x + 1;
+100: x := x + y;
+110: x := x + 1;
+120: until;

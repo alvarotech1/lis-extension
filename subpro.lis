@@ -1,0 +1,11 @@
+10: sub contarHasta do
+11:   i := 1;
+12:   acum := 0;
+13:   limite := 5;
+14:   while i < limite do
+15:     acum := acum + i;
+16:     i := i + 1;
+17:   end;
+18: end;
+19: call contarHasta;
+20: total := acum * 2;

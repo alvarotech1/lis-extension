@@ -1,0 +1,4 @@
+10: sub saludar do
+11:   x := 1;
+12: end;
+13: call saludar;
