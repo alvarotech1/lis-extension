@@ -3,9 +3,11 @@ module Eval3 (eval) where
 import AST
 import Control.Applicative (Applicative(..))
 import Control.Monad       (liftM, ap)  
+import Debug.Trace
+
 
 -- Estados
-type Funcs = [(String, Comm)]
+type Funcs = [(String, ([Variable], Comm))]
 type Env = [(Variable,Int)]
 
 
@@ -31,6 +33,8 @@ instance Monad StateErrorTick where
 class Monad m => MonadState m where
     lookfor :: Variable -> m Int
     update :: Variable -> Int -> m ()
+    getEnv  :: m Env
+    setEnv  :: Env -> m ()
 
 instance MonadState StateErrorTick where
     lookfor var = StateErrorTick (\s -> maybe Nothing (\v -> Just (v, s, 0)) (lookfor' var s))
@@ -41,6 +45,8 @@ instance MonadState StateErrorTick where
                      where update' var val [] = [(var, val)]
                            update' var val ((var', val'):ss) | var == var' = (var, val):ss
                                                              | otherwise   = (var', val'):(update' var val ss)
+    getEnv = StateErrorTick (\s -> Just (s, s, 0))
+    setEnv s' = StateErrorTick (\_ -> Just ((), s', 0))
 
 -- Clase para representar mónadas que lanzan errores.
 class Monad m => MonadError m where
@@ -73,30 +79,78 @@ eval p =
        Nothing        -> error "ERROR!"
 
 splitDefs :: Comm -> (Funcs, Comm)
-splitDefs (Seq (Sub f body) rest) =
+splitDefs (Seq (Sub f params body) rest) =
   let (fs, main) = splitDefs rest
-  in ((f, body):fs, main)
+  in ((f, (params, body)) : fs, main)
 splitDefs c = ([], c)
 
 
 -- Evalua un comando en un estado dado
-evalComm' :: (MonadState m, MonadError m, MonadTick m) => Comm -> Funcs -> m ()
-evalComm' Skip _ = return ()
-evalComm' (Let v e) _ = do val <- evalIntExp e
-                           update v val
-evalComm' (Seq l r) fs = do evalComm' l fs
-                            evalComm' r fs
-evalComm' (Cond b tc fc) fs = do bval <- evalBoolExp b
-                                 if bval then evalComm' tc fs
-                                         else evalComm' fc fs
-evalComm' (While b c) fs = do bval <- evalBoolExp b
-                              if bval then evalComm' (Seq c (While b c)) fs
-                                      else return ()
-evalComm' (Sub _ _) _ = return ()  -- ya se extrajo antes
-evalComm' (Call f) fs =
-  case lookup f fs of
-    Just cuerpo -> evalComm' cuerpo fs
-    Nothing     -> throw
+evalComm' :: (MonadState m, MonadError m, MonadTick m) => Comm -> Funcs -> m (Maybe Int)
+evalComm' Skip _ = return Nothing
+evalComm' (Let v e) _ = do
+  val <- evalIntExp e
+  update v val
+  return Nothing
+evalComm' (Seq l r) fs = do
+  res <- evalComm' l fs
+  case res of
+    Just val -> return (Just val)  -- si el izquierdo devuelve, corto
+    Nothing  -> evalComm' r fs
+evalComm' (Cond b c1 c2) fs = do
+  val <- evalBoolExp b
+  if val then evalComm' c1 fs else evalComm' c2 fs
+evalComm' (Inc v) _ = do
+  val <- lookfor v
+  update v (val + 1)
+  tick
+  return Nothing
+evalComm' (Dec v) _ = do
+  val <- lookfor v
+  update v (val - 1)
+  tick
+  return Nothing
+evalComm' (While b c) fs = do
+  cond <- evalBoolExp b
+  if cond
+    then do
+      rv <- evalComm' c fs
+      case rv of
+        Just v  -> return (Just v)  -- corto el while si hubo return
+        Nothing -> evalComm' (While b c) fs
+    else return Nothing
+evalComm' (Sub _ _ _) _ = return Nothing  -- ya se extrajo antes
+evalComm' (Return e) _ = do
+  val <- evalIntExp e
+  return (Just val)
+evalComm' (Call f args) funcs =
+  case lookup f funcs of
+    Just (params, body) -> do
+      argVals <- mapM evalIntExp args
+      oldEnv <- getEnv
+      let paramBindings = zip params argVals
+      setEnv (paramBindings ++ oldEnv)
+      _ <- evalComm' body funcs  -- descarto el return
+      setEnv oldEnv
+      return Nothing
+    Nothing -> throw
+
+evalComm' (LetCall v f args) funcs =
+  case lookup f funcs of
+    Just (params, body) -> do
+      argVals <- mapM evalIntExp args
+      oldEnv <- getEnv
+      let paramBindings = zip params argVals
+          newEnv = paramBindings ++ oldEnv
+      setEnv newEnv
+      ret <- evalComm' body funcs
+      setEnv oldEnv
+      case ret of
+        Just val -> do update v val
+                       return Nothing
+        Nothing   -> throw
+    Nothing -> throw
+
 
 -- Evalua una expresion entera, sin efectos laterales
 evalIntExp :: (MonadState m, MonadError m, MonadTick m) => IntExp -> m Int

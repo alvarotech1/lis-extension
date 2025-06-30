@@ -27,9 +27,13 @@ data BoolExp = BTrue
 -- Comandos (sentencias)
 data Comm = Skip
           | Let Variable IntExp
+          | LetCall Variable String [IntExp]
           | Seq Comm Comm
           | Cond BoolExp Comm Comm
           | While BoolExp Comm
-          | Sub String Comm       
-          | Call String           
+          | Inc Variable
+          | Dec Variable
+          | Sub String [Variable] Comm       
+          | Call String [IntExp]
+          | Return IntExp          
  deriving Show

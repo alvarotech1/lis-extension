@@ -20,7 +20,7 @@ lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                   , commentLine   = "//"
                                   , reservedNames = ["true","false","skip","if",
                                                      "then","else","end",
-                                                     "while","do"]
+                                                     "while","do","return"]
                                   , reservedOpNames = [  "+"
                                                        , "-"
                                                        , "*"
@@ -28,6 +28,8 @@ lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                                        , "<"
                                                        , ">"
                                                        , "&"
+                                                       , "++"
+                                                       , "--"
                                                        , "|"
                                                        , "="
                                                        , ";"
@@ -109,6 +111,12 @@ boolvalue = try (do reserved lis "true"
             <|> try (do reserved lis "false"
                         return BFalse)
 
+listaIdent :: Parser [Variable]
+listaIdent = parens lis (identifier lis `sepBy` comma lis)
+
+listaArgs :: Parser [IntExp]
+listaArgs = parens lis (intexp `sepBy` comma lis)
+
 -----------------------------------
 --- Parser de comandos
 -----------------------------------
@@ -128,6 +136,12 @@ comm2 = try (do reserved lis "skip"
                     case2 <- comm
                     reserved lis "end"
                     return (Cond cond case1 case2))
+        <|> try (do var <- identifier lis
+                    reservedOp lis ":="
+                    reserved lis "call"
+                    fname <- identifier lis
+                    args <- listaArgs
+                    return (LetCall var fname args))
         <|> try (do str <- identifier lis
                     reservedOp lis ":="
                     e <- intexp
@@ -138,19 +152,27 @@ comm2 = try (do reserved lis "skip"
                     body <- comm
                     reserved lis "end"
                     return (While cond body))
-        <|> try (do reserved lis "begin"
-                    c <- comm
-                    reserved lis "end"
-                    return c)
+        <|> try (do var <- identifier lis
+                    reservedOp lis "++"
+                    return (Inc var))
+        <|> try (do var <- identifier lis
+                    reservedOp lis "--"
+                    return (Dec var))
         <|> try (do reserved lis "sub"
                     fname <- identifier lis
+                    params <- listaIdent
                     reserved lis "do"
                     cuerpo <- comm
                     reserved lis "end"
-                    return (Sub fname cuerpo))
+                    return (Sub fname params cuerpo))
         <|> try (do reserved lis "call"
                     fname <- identifier lis
-                    return (Call fname))
+                    args <- listaArgs
+                    return (Call fname args))
+        <|> try (do reserved lis "return"
+                    e <- intexp
+                    return (Return e))
+            
 
 
 

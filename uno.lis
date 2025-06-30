@@ -1,0 +1,5 @@
+10: sub nada(n) do
+11:   n--;
+11:   return n;
+12: end;
+13: x := call nada(2);

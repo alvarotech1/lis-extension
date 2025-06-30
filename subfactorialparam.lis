@@ -1,0 +1,9 @@
+10: sub factorial(n) do
+11:   res := 1;
+12:   while n > 1 do
+13:     res := res * n;
+14:     n := n - 1;
+15:   end;
+16:   return res;    
+17: end;
+19: f := call factorial(6);
