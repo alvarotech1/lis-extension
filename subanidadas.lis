@@ -1,0 +1,8 @@
+1: sub suma(n, m) do
+2:  return n + m;
+3: end;
+4: sub triple(n) do
+5:  return n * 3;
+6: end;
+7: x := call suma(2, 3);
+8: y := call triple(x);

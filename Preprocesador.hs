@@ -24,18 +24,18 @@ extraerBloque prog dest =
 
 
 procesarLineas :: [LineaNumerada] -> [String]
-procesarLineas prog = go prog []
+procesarLineas prog = resolverGoto prog []
   where
-    go :: [LineaNumerada] -> [Int] -> [String]
-    go [] _ = []
-    go ((n,c):xs) eliminados
-      | n `elem` eliminados = go xs eliminados      -- ya fue copiado
-      | esUntil c          = go xs eliminados      -- nunca llega acá salvo error
+    resolverGoto :: [LineaNumerada] -> [Int] -> [String]
+    resolverGoto [] _ = []
+    resolverGoto ((n,c):xs) eliminados
+      | n `elem` eliminados = resolverGoto xs eliminados      -- ya fue copiado
+      | esUntil c          = resolverGoto xs eliminados      -- nunca llega acá salvo error
       | esGoto c =
           case extraerBloque prog (extraerDestino c) of
             Left err               -> error err
-            Right (cop, numsDel)   -> cop ++ go xs (numsDel ++ eliminados)
-      | otherwise           = c : go xs eliminados
+            Right (cop, numsDel)   -> cop ++ resolverGoto xs (numsDel ++ eliminados)
+      | otherwise           = c : resolverGoto xs eliminados
 
 
 preprocesarGoto :: String -> Either String String
@@ -59,7 +59,7 @@ trim :: String -> String
 trim = reverse . dropWhile isSpace . reverse . dropWhile isSpace
 
 esGoto :: String -> Bool
-esGoto s = take 4 s == "goto"           -- mantiene tu lógica original
+esGoto s = take 4 s == "goto"           
 
 extraerDestino :: String -> Int
 extraerDestino str =

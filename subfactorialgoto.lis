@@ -1,13 +1,13 @@
-10: sub factorial do
-11:   n := 5;
+10: sub factorial() do
+11:   n := 6;
 12:   res := 1;
-13:   goto 100;    // cuerpo principal del bucle
-14:   x := 999;  
+13:   goto 100;   
+14:   x := 999;
+14:   return res;
 15: end;
-20: call factorial;
-21: r := res + 0;  
+20: res := call factorial();
 100: while n > 1 do
 101:   res := res * n;
 102:   n := n - 1;
 103: end;
-104: until;
+104:until;

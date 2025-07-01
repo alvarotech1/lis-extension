@@ -95,7 +95,7 @@ evalComm' (Let v e) _ = do
 evalComm' (Seq l r) fs = do
   res <- evalComm' l fs
   case res of
-    Just val -> return (Just val)  -- si el izquierdo devuelve, corto
+    Just val -> return (Just val)  
     Nothing  -> evalComm' r fs
 evalComm' (Cond b c1 c2) fs = do
   val <- evalBoolExp b
@@ -116,10 +116,10 @@ evalComm' (While b c) fs = do
     then do
       rv <- evalComm' c fs
       case rv of
-        Just v  -> return (Just v)  -- corto el while si hubo return
+        Just v  -> return (Just v)  
         Nothing -> evalComm' (While b c) fs
     else return Nothing
-evalComm' (Sub _ _ _) _ = return Nothing  -- ya se extrajo antes
+evalComm' (Sub _ _ _) _ = return Nothing 
 evalComm' (Return e) _ = do
   val <- evalIntExp e
   return (Just val)
@@ -130,7 +130,7 @@ evalComm' (Call f args) funcs =
       oldEnv <- getEnv
       let paramBindings = zip params argVals
       setEnv (paramBindings ++ oldEnv)
-      _ <- evalComm' body funcs  -- descarto el return
+      _ <- evalComm' body funcs  
       setEnv oldEnv
       return Nothing
     Nothing -> throw

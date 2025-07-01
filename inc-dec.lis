@@ -6,4 +6,8 @@
 15:   end;
 16:   return res;
 17: end;
-18: f := call factorial(5);
+18: a := 4;
+20: a++;
+30: a++;
+40: a--;
+48: resultado := call factorial(a);

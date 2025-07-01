@@ -120,6 +120,8 @@ listaArgs = parens lis (intexp `sepBy` comma lis)
 -----------------------------------
 --- Parser de comandos
 -----------------------------------
+
+-- se cambio el parser para que se pida ; al final de cada linea.
 comm :: Parser Comm
 comm = do
   cs <- endBy1 comm2 (reservedOp lis ";")

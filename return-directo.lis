@@ -1,0 +1,4 @@
+10: sub uno() do
+11:   return 1;
+12: end;
+13: x := call uno();

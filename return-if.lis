@@ -1,0 +1,7 @@
+10: sub signo(n) do
+11:   if n > 0 then return 1;
+12:   else return -1;
+13:   end;
+14: end;
+15: x := call signo(7);
+16: y := call signo(-3);
