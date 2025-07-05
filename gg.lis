@@ -1,0 +1,12 @@
+7: sub imprimir(a) do
+8: z := a * 2;
+8: return z;
+9: end;
+10: x := 3;
+20: y := 5;
+30: if x < y then
+40:   x := x + 1;
+50: else
+60:   y := y + 1;
+70: end;
+80: result := call imprimir(x);

@@ -11,6 +11,7 @@ data IntExp = Const Int
             | Minus IntExp IntExp
             | Times IntExp IntExp
             | Div IntExp IntExp
+            | Mod IntExp IntExp
  deriving Show
 
 -- Expresiones Booleanas

@@ -1,4 +1,4 @@
-module Preprocesador (preprocesarGoto) where
+module Preprocesador  where
 
 import Data.Char (isDigit, isSpace)
 import Text.Read (readMaybe)

@@ -1,0 +1,7 @@
+10: x := 0;
+20: sub inc() do
+30:   x++;
+40: end;
+50: call inc();
+60: call inc();
+70: // x == 2 ahora

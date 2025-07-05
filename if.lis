@@ -1,0 +1,17 @@
+10: sub par(x) do
+15:     if x % 2 = 0 then
+20:         return 0;
+30:     else
+40:         return 1;
+50:     end;
+51: end;
+51: sub par(x) do
+52:     if false then
+53:         return 20;
+54:     else
+55:         return 21;
+56:     end;
+57: end;
+58: g := 1;
+80: resul := call par(5 + g);
+90: resul2 := call par(6);

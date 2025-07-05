@@ -35,6 +35,7 @@ lis = makeTokenParser (emptyDef   { commentStart  = "/*"
                                                        , ";"
                                                        , "~"
                                                        , ":="
+                                                       , "%"
                                                        ]
                                    }
                                  )
@@ -71,6 +72,8 @@ multopp = do try (reservedOp lis "*")
              return Times
           <|> do try (reservedOp lis "/")
                  return Div
+          <|> do try (reservedOp lis "%")
+                 return Mod
 
 addopp = do try (reservedOp lis "+")
             return Plus

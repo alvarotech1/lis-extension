@@ -44,7 +44,7 @@ instance MonadState StateErrorTick where
     update var val = StateErrorTick (\s -> Just ((), update' var val s, 0))
                      where update' var val [] = [(var, val)]
                            update' var val ((var', val'):ss) | var == var' = (var, val):ss
-                                                             | otherwise   = (var', val'):(update' var val ss)
+                                                             | otherwise   = (var', val'): update' var val ss
     getEnv = StateErrorTick (\s -> Just (s, s, 0))
     setEnv s' = StateErrorTick (\_ -> Just ((), s', 0))
 
@@ -79,9 +79,12 @@ eval p =
        Nothing        -> error "ERROR!"
 
 splitDefs :: Comm -> (Funcs, Comm)
-splitDefs (Seq (Sub f params body) rest) =
-  let (fs, main) = splitDefs rest
-  in ((f, (params, body)) : fs, main)
+splitDefs Skip = ([], Skip)
+splitDefs (Sub f params body) = ([(f, (params, body))], Skip)
+splitDefs (Seq c1 c2) =
+  let (fs1, c1') = splitDefs c1
+      (fs2, c2') = splitDefs c2
+  in (fs1 ++ fs2, Seq c1' c2')
 splitDefs c = ([], c)
 
 
@@ -176,6 +179,13 @@ evalIntExp (Div l r)   = do lval <- evalIntExp l
                             if rval == 0 then throw
                             else do tick
                                     return (div lval rval)
+evalIntExp (Mod l r) = do lval <- evalIntExp l
+                          rval <- evalIntExp r
+                          if rval == 0 then throw
+                                      else do tick
+                                              return (mod lval rval)
+
+
 
 -- Evalua una expresion entera, sin efectos laterales
 evalBoolExp :: (MonadState m, MonadError m, MonadTick m) => BoolExp -> m Bool

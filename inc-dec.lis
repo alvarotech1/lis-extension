@@ -6,8 +6,12 @@
 15:   end;
 16:   return res;
 17: end;
-18: a := 4;
-20: a++;
-30: a++;
-40: a--;
-48: resultado := call factorial(a);
+18: a := 5;
+20: resultado := call factorial(a);
+21: sub doble(x) do
+22:  x := x * x;
+23:  return x;
+24: end;
+30: resultado++;
+40: resultado--;
+48: resultado--;
